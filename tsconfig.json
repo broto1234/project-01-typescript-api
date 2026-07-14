@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020", // Specify ECMAScript target version
     "module": "commonjs",  // Specify module code generation
-    "moduleResolution": "node", // Specify module resolution strategy
+    // "moduleResolution": "node16", // Specify module resolution strategy
     "resolveJsonModule": true,  // Allow importing JSON files
     "sourceMap": true,  // Generate corresponding '.map' file
     "noImplicitReturns": true,  // Report error when not all code paths in function return a value
