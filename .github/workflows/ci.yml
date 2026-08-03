@@ -65,6 +65,14 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Debug Prisma environment
+        run: |
+          echo "DATABASE_URL from shell:"
+          echo "$DATABASE_URL"
+
+          echo "DATABASE_URL from Node:"
+          node -e "console.log(process.env.DATABASE_URL)"
+
       - name: Run database migrations
         run: npx prisma migrate deploy
 
