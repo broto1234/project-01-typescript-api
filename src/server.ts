@@ -2,6 +2,7 @@ import 'dotenv/config';
 import app from './app';
 import { env } from './config/env';
 import prisma from './lib/prisma';
+import logger from './lib/logger';
 
 const PORT = env.port;
 // app.listen(PORT, () => {
@@ -10,7 +11,7 @@ const PORT = env.port;
 
 //Store the server instance
 const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });
 
 
@@ -21,15 +22,15 @@ async function shutdown(signal: string) {
   if (shuttingDown) return;
   shuttingDown = true;
 
-  console.log(`${signal} received. Shutting down gracefully...`);
+  logger.info(`${signal} received. Shutting down gracefully...`);
 
   server.close(async () => {
     try {
       await prisma.$disconnect();
-      console.log("Disconnected from database.");
+      logger.info("Disconnected from database.");
       process.exit(0);
-    } catch (err) {
-      console.error("Shutdown error:", err);
+    } catch (error) {
+      logger.error({ error }, "Shutdown error");
       process.exit(1);
     }
   });
