@@ -26,10 +26,8 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: "MyPassword#135"
           POSTGRES_DB: project01_test
-
         ports:
           - 5432:5432
-
         options: >-
           --health-cmd="pg_isready -U postgres -d project01_test"
           --health-interval=10s
@@ -49,32 +47,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create test environment
-        run: |
-          echo "DATABASE_URL=$DATABASE_URL" >> .env
-          echo "JWT_SECRET=$JWT_SECRET" >> .env
-          echo "JWT_EXPIRES_IN=$JWT_EXPIRES_IN" >> .env
-          echo "REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET" >> .env
-          echo "NODE_ENV=$NODE_ENV" >> .env
-
-      - name: Check DATABASE_URL
-        run: |
-          echo "DATABASE_URL exists:"
-          echo $DATABASE_URL
-
       - name: Generate Prisma Client
         run: npx prisma generate --config ./prisma.config.ts
 
-      - name: Debug Prisma environment
-        run: |
-          echo "DATABASE_URL from shell:"
-          echo "$DATABASE_URL"
-
-          echo "DATABASE_URL from Node:"
-          node -e "console.log(process.env.DATABASE_URL)"
-
       - name: Run database migrations
-        run: npx prisma migrate deploy --config ./prisma.config.ts 
+        run: npx prisma migrate deploy --config ./prisma.config.ts
 
       - name: Build project
         run: npm run build
