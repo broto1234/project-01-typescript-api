@@ -1091,9 +1091,6 @@ describe("PATCH /api/users/:id", () => {
         email: "john-updated@example.com",
       });
 
-      console.log(response.status);
-      console.log(response.body);
-
     // Step 5 — Assertions
     expect(response.status).toBe(200);
 

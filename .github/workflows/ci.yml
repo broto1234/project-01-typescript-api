@@ -63,7 +63,7 @@ jobs:
           echo $DATABASE_URL
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: npx prisma generate --config ./prisma.config.ts
 
       - name: Debug Prisma environment
         run: |
@@ -74,7 +74,7 @@ jobs:
           node -e "console.log(process.env.DATABASE_URL)"
 
       - name: Run database migrations
-        run: npx prisma migrate deploy
+        run: npx prisma migrate deploy --config ./prisma.config.ts 
 
       - name: Build project
         run: npm run build

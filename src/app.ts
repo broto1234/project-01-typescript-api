@@ -9,6 +9,7 @@ import authRouter from './routes/auth.routes';
 
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger";
+import healthRouter from './routes/health.routes';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use(express.json());
 // Routes
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);
+app.use("/api/health", healthRouter);  // Health check route
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

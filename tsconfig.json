@@ -1,18 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES2020", // Specify ECMAScript target version
-    "module": "commonjs",  // Specify module code generation
-    // "moduleResolution": "node16", // Specify module resolution strategy
-    "resolveJsonModule": true,  // Allow importing JSON files
-    "sourceMap": true,  // Generate corresponding '.map' file
-    "noImplicitReturns": true,  // Report error when not all code paths in function return a value
-    "strict": true,  // Enable all strict type-checking options
-    "esModuleInterop": true,  // Enables emit interoperability between CommonJS and ES Modules
-    "skipLibCheck": true,  // Skip type checking of declaration files
-    "forceConsistentCasingInFileNames": true,  // Disallow inconsistently-cased references to the same file
-    "outDir": "./dist",  // Redirect output structure to the directory
-    "rootDir": "./src"  // Specify the root directory of input files
+    "target": "ES2020",
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": ".",  //
+    "types": ["node", "jest"]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src",
+    "tests",
+    "prisma.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

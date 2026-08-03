@@ -27,7 +27,7 @@ const options: swaggerJsdoc.Options = {
       },
       {
         name: "Users",
-        description: "Operations for managing user accounts.",
+        description: "User management endpoints, including CRUD operations and role management.",
       },
     ],
 
@@ -253,6 +253,7 @@ const options: swaggerJsdoc.Options = {
   // API files to be scanned for documentation - specifies the paths to the files that contain your API routes and controllers. Swagger will scan these files for JSDoc comments to generate the API documentation.
   apis: [
     "./src/routes/*.ts",
+    "./dist/src/routes/*.js"
   ],
 };
 

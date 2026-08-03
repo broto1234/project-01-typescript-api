@@ -62,7 +62,6 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
   const id = Number(req.params.id);
   const updatedUser: UpdateUser = res.locals.body;
 
-  console.log("Updated User Data:", updatedUser); // Log the updated user data for debugging
   const user = await userService.updateUser(id, updatedUser);
 
   res.status(200).json({ success: true, message: `User with ID ${id} updated successfully`, user });

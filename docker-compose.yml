@@ -1,27 +1,34 @@
 services:
-  api:
-    container_name: typescript-api
-    build:
-      context: .
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-
   postgres:
-    container_name: postgres-db
     image: postgres:16-alpine
-    restart: always
+    container_name: postgres-db
+
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: MyPasswordxxxxx
       POSTGRES_DB: project01
+
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
-volumes:
-  postgres_data:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d project01"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  api:
+    build: .
+    container_name: typescript-api
+
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - .env
+
+    depends_on:
+      postgres:
+        condition: service_healthy   
+        # means: Do not start API until PostgreSQL passes the health check.
