@@ -54,10 +54,17 @@ jobs:
 
       - name: Debug PostgreSQL
         run: |
-          echo "DATABASE_URL=$DATABASE_URL"
-          which pg_isready || true
-          pg_isready -h postgres -p 5432 -U postgres || true
-          getent hosts postgres || true
+          echo "=== ENV ==="
+          echo "$DATABASE_URL"
+
+          echo "=== DNS ==="
+          getent hosts postgres
+
+          echo "=== PORT ==="
+          nc -vz postgres 5432
+
+          echo "=== PG READY ==="
+          pg_isready -h postgres -p 5432 -U postgres
 
       - name: Run database migrations
         run: npx prisma migrate deploy --config ./prisma.config.ts
