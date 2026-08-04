@@ -13,11 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: "postgresql://postgres:MyPassword%23135@postgres:5432/project01_test?schema=public"
-      JWT_SECRET: "test-secret"
-      JWT_EXPIRES_IN: "15m"
-      REFRESH_TOKEN_SECRET: "test-refresh-secret"
-      NODE_ENV: "test"
+      DATABASE_URL: postgresql://postgres:MyPassword%23135@postgres:5432/project01_test?schema=public
+      JWT_SECRET: test-secret
+      JWT_EXPIRES_IN: 15m
+      REFRESH_TOKEN_SECRET: test-refresh-secret
+      FRONTEND_URL: http://localhost:5173
+      REFRESH_TOKEN_EXPIRES_DAYS: 7
+      BCRYPT_SALT_ROUNDS: 10
+      NODE_ENV: test
 
     services:
       postgres:
@@ -51,6 +54,13 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate --config ./prisma.config.ts
+
+      - name: Debug PostgreSQL
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL"
+          which pg_isready || true
+          pg_isready -h postgres -p 5432 -U postgres || true
+          getent hosts postgres || true
 
       - name: Run database migrations
         run: npx prisma migrate deploy --config ./prisma.config.ts
