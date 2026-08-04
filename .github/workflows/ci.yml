@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: "postgresql://postgres:MyPassword%23135@postgres:5432/project01_test?schema=public"
+      DATABASE_URL: "postgresql://postgres:MyPassword%23135@localhost:5432/project01_test?schema=public"
       JWT_SECRET: "test-secret"
       JWT_EXPIRES_IN: "15m"
       REFRESH_TOKEN_SECRET: "test-refresh-secret"
@@ -57,14 +57,11 @@ jobs:
           echo "=== ENV ==="
           echo "$DATABASE_URL"
 
-          echo "=== DNS ==="
-          getent hosts postgres
-
           echo "=== PORT ==="
-          nc -vz postgres 5432
+          pg_isready -h localhost -p 5432 -U postgres
 
-          echo "=== PG READY ==="
-          pg_isready -h postgres -p 5432 -U postgres
+          echo "=== CONNECTION ==="
+          nc -vz localhost 5432
 
       - name: Run database migrations
         run: npx prisma migrate deploy --config ./prisma.config.ts
