@@ -57,11 +57,15 @@ jobs:
           echo "=== ENV ==="
           echo "$DATABASE_URL"
 
-          echo "=== PORT ==="
-          pg_isready -h localhost -p 5432 -U postgres
+          echo "=== WAITING FOR POSTGRES ==="
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            echo "Waiting for postgres..."
+            sleep 2
+          done
 
-          echo "=== CONNECTION ==="
-          nc -vz localhost 5432
+          echo "=== FINAL CHECK ==="
+          pg_isready -h localhost -p 5432 -U postgres
 
       - name: Run database migrations
         run: npx prisma migrate deploy --config ./prisma.config.ts
