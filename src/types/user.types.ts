@@ -19,16 +19,21 @@ export interface PublicUser {
   updatedAt: Date;
 }
 
-export interface CreateUser {
-  name: string;
-  email: string;
-  password: string;
-}
+// export interface CreateUser {
+//   name: string;
+//   email: string;
+//   password: string;
+// }
 
-export interface UpdateUser {
-  name?: string;
-  email?: string;
-}
+// type Login = {
+//   email: string;
+//   password: string;
+// };
+
+// export interface UpdateUser {
+//   name?: string;
+//   email?: string;
+// }
 
 export interface LoginResponse {
   user: PublicUser;

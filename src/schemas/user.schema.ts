@@ -26,7 +26,7 @@ export const updateUserSchema = z
       error: "At least one field must be provided",
     }
   );
-
+export type UpdateUser = z.infer<typeof updateUserSchema>;
 
 
 

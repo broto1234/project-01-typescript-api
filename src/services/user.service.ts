@@ -1,7 +1,8 @@
-import { User, UpdateUser, UpdateUserRole, PublicUser, Role } from '../types/user.types';
+import { UpdateUserRole, PublicUser, Role } from '../types/user.types';
+import { UpdateUser, UserListQuery } from '../schemas/user.schema';
 import AppError from '../utils/AppError';
 import prisma from '../lib/prisma';
-import { UserListQuery } from '../schemas/user.schema';
+import { toPublicUser } from '../utils/publicUser';
 
 export const getAllUsers = async ( query: UserListQuery ): Promise<{
     users: PublicUser[];
@@ -63,9 +64,7 @@ export const getAllUsers = async ( query: UserListQuery ): Promise<{
     ]);
 
     // Map the users to exclude the password field before returning them
-    const publicUsers = users.map(
-      ({ password: _password, ...publicUser }) => publicUser
-    );
+    const publicUsers = users.map(toPublicUser);
 
     // Return the public users along with pagination information
     return {
@@ -94,13 +93,16 @@ export const getUserById = async (id: number): Promise<PublicUser> => {
   }
 
   // 3. user without password
-  const {
-    password: _password,
-    ...publicUser
-  } = user;
+  // const {
+  //   password: _password,
+  //   ...publicUser
+  // } = user;
 
   // 4. Return user without password
-  return publicUser;
+  //return publicUser;
+
+  // 3 + 4 
+  return toPublicUser(user);
 };
 
 
@@ -122,12 +124,9 @@ export const updateUser = async (
   // 3. Check if email is changing
   if (data.email && data.email !== user.email) {     // Prevents unnecessary database queries.
 
-    const existingUser =
-      await prisma.user.findUnique({
-        where: {
-          email: data.email,
-        },
-      });
+    const existingUser = await prisma.user.findUnique({
+        where: { email: data.email },
+    });
 
     if (existingUser) {
       throw new AppError(
@@ -138,20 +137,20 @@ export const updateUser = async (
   }
 
   // 4. Update user
-  const updatedUser =
-    await prisma.user.update({
+  const updatedUser = await prisma.user.update({
       where: { id },
       data,
     });
 
   // 5. user without password
-  const {
-    password: _password,
-    ...publicUser
-  } = updatedUser;
+  // const {
+  //   password: _password,
+  //   ...publicUser
+  // } = updatedUser;
 
   // 6. Return updated user without password
-  return publicUser;
+  //return publicUser;
+  return toPublicUser(updatedUser);
 };
 
 
@@ -170,12 +169,7 @@ export const updateUserRole = async (
     },
   });
 
-  const {
-    password: _password,
-    ...publicUser
-  } = user;
-
-  return publicUser;
+  return toPublicUser(user);
 };
 
 // Find the user whose ID is id and delete that user.

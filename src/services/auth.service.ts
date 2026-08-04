@@ -1,16 +1,19 @@
 import bcrypt from "bcrypt";
 import prisma from "../lib/prisma";
-import { PublicUser, LoginResponse, CreateUser, RefreshTokenResponse } from "../types/user.types";
+import { PublicUser, LoginResponse, RefreshTokenResponse } from "../types/user.types";
+import { CreateUser, LoginUser } from "../schemas/auth.schema";
 import AppError from "../utils/AppError";
 import { generateToken } from "../utils/jwt";
 import { generateRefreshToken, hashRefreshToken } from "../utils/refreshToken";
+import { env } from "../config/env";
+import { toPublicUser } from "../utils/publicUser";
 
 // for registerUser, we will hash the password before saving it to the database.
 export const registerUser = async (
   data: CreateUser
 ): Promise<PublicUser> => {
 
-  const hashedPassword = await bcrypt.hash(data.password, 10);
+  const hashedPassword = await bcrypt.hash(data.password, env.bcryptSaltRounds);
 
   const user = await prisma.user.create({
     data: {
@@ -21,21 +24,20 @@ export const registerUser = async (
   });
 
   //...publicUser, which collects all the remaining properties except password.
-  const { password: _password, ...publicUser } = user;
-
-  return publicUser;
+  // const { password: _password, ...publicUser } = user;
+  // return publicUser;
+  return toPublicUser(user);
 };
 
 
 // for loginUser, we will compare the hashed password with the provided password using bcrypt.compare().
 export const loginUser = async (
-  email: string,
-  password: string
+  data: LoginUser
 ): Promise<LoginResponse> => {
 
   const user = await prisma.user.findUnique({
     where: {
-      email,
+      email: data.email,
     },
   });
 
@@ -44,7 +46,7 @@ export const loginUser = async (
   }
 
   const isPasswordValid = await bcrypt.compare(
-    password,
+    data.password,
     user.password
   );
 
@@ -52,26 +54,24 @@ export const loginUser = async (
     throw new AppError("Invalid email or password", 401);
   }
 
-  const { password: _password, ...publicUser } = user;
-
+  
   // Generate short-lived access token
   const accessToken = generateToken(
     user.id,
     user.role
   );
-
+  
   // Generate random refresh token
   const refreshToken = generateRefreshToken();
-
+  
   // Hash the refresh token before storing it in the database
   const tokenHash = hashRefreshToken(refreshToken);
-
+  
   // Refresh token expires in 7 days
   const expiresAt = new Date(
-    Date.now() +
-      7 * 24 * 60 * 60 * 1000
+    Date.now() + env.refreshTokenExpiresDays * 24 * 60 * 60 * 1000
   );
-
+  
   await prisma.refreshToken.create({
     data: {
       tokenHash,
@@ -79,9 +79,11 @@ export const loginUser = async (
       expiresAt
     },
   });
+  
+  // const { password: _password, ...publicUser } = user;
 
   return { 
-    user: publicUser, 
+    user: toPublicUser(user), 
     accessToken,
     refreshToken,
   };
@@ -102,9 +104,7 @@ export const getCurrentUser = async (
     throw new AppError("User not found", 404);
   }
 
-  const { password: _password, ...publicUser } = user;
-
-  return publicUser;
+  return toPublicUser(user);
 };
 
 
@@ -169,7 +169,7 @@ export const refreshAccessToken = async (
   // New refresh token expires in 7 days
   const expiresAt = new Date(
     Date.now() +
-      7 * 24 * 60 * 60 * 1000
+      env.refreshTokenExpiresDays * 24 * 60 * 60 * 1000
   );
 
   // Revoke old refresh token

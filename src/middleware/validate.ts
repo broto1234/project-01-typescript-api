@@ -7,9 +7,7 @@ import {
 } from "express";
 import { z } from "zod";
 
-const validate = (
-  schema: z.ZodType
-) => {
+const validate = ( schema: z.ZodType ) => {
   return (
     req: Request,
     res: Response,

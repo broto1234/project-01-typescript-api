@@ -2,8 +2,8 @@
 
 import { Request, Response } from 'express';
 import * as userService from '../services/user.service';
-import { UpdateUser, UpdateUserRole } from '../types/user.types';
-import { UserListQuery } from '../schemas/user.schema';
+import { UpdateUserRole } from '../types/user.types';
+import { UpdateUser, UserListQuery } from '../schemas/user.schema';
 
 
 const getAllUsers = async (

@@ -13,19 +13,19 @@ const requiredEnv = (
 };
 
 export const env = {
-  port: Number(
-    requiredEnv("PORT")
-  ),
-  
-  databaseUrl: requiredEnv(
-    "DATABASE_URL"
+  port: Number(requiredEnv("PORT")),
+
+  databaseUrl: requiredEnv("DATABASE_URL"),
+
+  jwtSecret: requiredEnv("JWT_SECRET"),
+
+  frontendUrl: requiredEnv("FRONTEND_URL"),
+
+  refreshTokenExpiresDays: Number(
+    requiredEnv("REFRESH_TOKEN_EXPIRES_DAYS")
   ),
 
-  jwtSecret: requiredEnv(
-    "JWT_SECRET"
-  ),
-
-  frontendUrl: requiredEnv(
-    "FRONTEND_URL"
+  bcryptSaltRounds: Number(
+    requiredEnv("BCRYPT_SALT_ROUNDS")
   ),
 };

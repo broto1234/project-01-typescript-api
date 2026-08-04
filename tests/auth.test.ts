@@ -27,10 +27,10 @@ afterEach(async () => {
 });
 
 
-// -------- Authentication integration test ----------
+// -------- For Authentication ----------
 describe("GET /api/auth/me", () => {
 
-  // 1. Test for unauthorized access without authentication
+  // 1. Test for unauthorized access without authentication - no token provided
   it("should return 401 without authentication", async () => {
     const response = await request(app)
       .get("/api/auth/me");
@@ -38,7 +38,7 @@ describe("GET /api/auth/me", () => {
     expect(response.status).toBe(401);
   });
 
-  // 2. Test for authorized access with valid token
+  // 2. Test for authorized access with - valid token
   it("should return the current user with a valid access token", async () => {
     const user = {
       name: "Auth Me Test User",
@@ -81,7 +81,7 @@ describe("GET /api/auth/me", () => {
     expect(meResponse.body.user).not.toHaveProperty("password");
   });
 
-  // 3. Test for invalid access token
+  // 3. Test for - invalid - access token
   it("should return 401 with an invalid access token", async () => {
     const response = await request(app)
       .get("/api/auth/me")
@@ -92,10 +92,10 @@ describe("GET /api/auth/me", () => {
 });
 
 
-// --------- Registration integration tests ---------
+// --------- For Registration ---------
 describe("POST /api/auth/register", () => {
 
-  // 4. Test for invalid registration data  
+  // 4. Test for - invalid (input) - registration data  
   it("should return 400 for invalid registration data", async () => {
     const response = await request(app)
       .post("/api/auth/register")
@@ -108,7 +108,7 @@ describe("POST /api/auth/register", () => {
     expect(response.status).toBe(400);
   });
 
-  // 5. Test for successful registration
+  // 5. Test for - successful - registration
   it("should register a new user successfully", async () => {
     const response = await request(app)
       .post("/api/auth/register")
@@ -129,7 +129,7 @@ describe("POST /api/auth/register", () => {
     expect(response.body.user).not.toHaveProperty("password");
   });
 
-  // 6. Test for duplicate email registration
+  // 6. Test for - duplicate email - registration
   it("should return 409 if email already exists", async () => {
     const user = {
       name: "Existing User",
@@ -156,10 +156,10 @@ describe("POST /api/auth/register", () => {
 
 
 
-// --------- Login integration tests ---------
+// --------- For Login ---------
 describe("POST /api/auth/login", () => {
 
-  // 7. Test for successful login with valid credentials
+  // 7. Test for - successful - login with valid credentials
   it("should login successfully with valid credentials", async () => {
     const user = {
       name: "Login Test User",
@@ -189,7 +189,7 @@ describe("POST /api/auth/login", () => {
   });
 
 
-  // 8. Test for incorrect password
+  // 8. Test for - incorrect - password
   it("should return 401 for incorrect password", async () => {
     const user = {
       name: "Wrong Password User",
@@ -215,7 +215,7 @@ describe("POST /api/auth/login", () => {
     expect(loginResponse.status).toBe(401);
   });
 
-  // 9. Test for non-existent user
+  // 9. Test for - non-existent/not fiund - user
   it("should return 401 if user does not exist", async () => {
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -408,5 +408,3 @@ describe("POST /api/auth/refresh", () => {
 afterAll(async () => {
   await prisma.$disconnect();
 });
-
-

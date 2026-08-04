@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as authService from "../services/auth.service";
-import { CreateUser } from "../types/user.types";
+import { CreateUser, LoginUser } from "../schemas/auth.schema";
 
 // POST /register → Register user
 export const register = async (
@@ -8,7 +8,7 @@ export const register = async (
   res: Response
 ): Promise<void> => {
   
-  const data: CreateUser = req.body;
+  const data: CreateUser = res.locals.body;
 
   const user = await authService.registerUser(data);
 
@@ -25,12 +25,9 @@ export const login = async (
   res: Response
 ): Promise<void> => {
 
-  const { email, password } = req.body;
+  const data: LoginUser = res.locals.body;
 
-  const result = await authService.loginUser(
-    email,
-    password
-  );
+  const result = await authService.loginUser( data );
 
   res.status(200).json({
     success: true,

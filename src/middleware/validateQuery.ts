@@ -37,3 +37,16 @@ const validateQuery = <T extends z.ZodType>(
 };
 
 export default validateQuery;
+
+//------
+//Body validation
+//
+//schema.parse(req.body);
+//
+//➡️ Relies on Express/global error handler.
+//
+//Query validation
+//
+//schema.safeParse(req.query);
+//
+//➡️ Handles the error directly inside the middleware.
