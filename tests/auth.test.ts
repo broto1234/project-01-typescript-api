@@ -5,6 +5,7 @@ import app from "../src/app";
 import prisma from "../src/lib/prisma";
 
 import { generateRefreshToken, hashRefreshToken } from "../src/utils/refreshToken";
+import { generatePasswordResetToken, hashPasswordResetToken } from "../src/utils/passwordReset";
 
 // Test users are removed/Clean up after every test - Runs after every test and cleans the test data:
 afterEach(async () => {
@@ -20,12 +21,43 @@ afterEach(async () => {
           "refresh-test@example.com",
           "revoked-token@example.com",
           "expired-token@example.com",
+          "reset@example.com",
+          "expired@example.com",
+          "used@example.com",
         ],
       },
     },
   });
 });
 
+
+const createPasswordResetToken = async (
+  userId: number,
+  options?: {
+    expiresAt?: Date;
+    usedAt?: Date | null;
+  }
+) => {
+  const resetToken = generatePasswordResetToken();
+
+  const tokenHash =
+    hashPasswordResetToken(resetToken);
+
+  await prisma.passwordResetToken.create({
+    data: {
+      tokenHash,
+      userId,
+      expiresAt:
+        options?.expiresAt ??
+        new Date(Date.now() + 2 * 60 * 60 * 1000),
+
+      usedAt:
+        options?.usedAt ?? null,
+    },
+  });
+
+  return resetToken;
+};
 
 // -------- For Authentication ----------
 describe("GET /api/auth/me", () => {
@@ -151,9 +183,7 @@ describe("POST /api/auth/register", () => {
 
     expect(secondResponse.status).toBe(409);
   });
-
 });
-
 
 
 // --------- For Login ---------
@@ -403,6 +433,203 @@ describe("POST /api/auth/refresh", () => {
 
 });
 
+
+// --------- Forgot Password integration tests ---------
+describe("POST /api/auth/forgot-password", () => {
+
+  //succeed when the email exists
+  it("should generate a password reset link for an existing user", async () => {
+
+    // Create a user first
+    const user = {
+      name: "Forgot Password User",
+      email: "forgot@example.com",
+      password: "Password123",
+      };  
+
+    // Register
+    await request(app)
+        .post("/api/auth/register")
+        .send(user);
+
+    // Call forgot password
+    const response = await request(app)
+    .post("/api/auth/forgot-password")
+    .send({
+        email: user.email,
+    });
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("message");
+    expect(response.body.message).toContain(
+      "reset-password?token="
+    );
+  });
+
+  // security test
+  it("should return the same response for a non-existing email", async () => {
+
+    // Request
+    const response = await request(app)
+    .post("/api/auth/forgot-password")
+    .send({
+        email: "doesnotexist@example.com",
+    });
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe(
+      "If an account exists, a password reset link has been sent."
+    );
+  });
+});
+
+// --------- Reset Password integration tests ---------
+describe("POST /api/auth/reset-password", () => {
+
+  // 14. Test for successful password reset with a valid token
+  it("should reset the password successfully with a valid token", async () => {
+    // Create a user first
+    const user = {
+      name: "Reset Test User",
+      email: "reset@example.com",
+      password: "Password123",
+    };
+
+    // Register
+    const registerResponse = await request(app)
+      .post("/api/auth/register")
+      .send(user);
+    expect(registerResponse.status).toBe(201);
+
+    // Call forgot password
+    const forgotResponse = await request(app)
+      .post("/api/auth/forgot-password")
+      .send({
+        email: user.email,
+      });
+    expect(forgotResponse.status).toBe(200);
+
+    // Extract the reset token from the response
+    const resetLink = forgotResponse.body.message;
+    const token = new URL(resetLink).searchParams.get("token");
+    expect(token).not.toBeNull();
+
+    // Call reset password
+    const resetResponse = await request(app)
+      .post("/api/auth/reset-password")
+      .send({
+        token: token,
+        password: "NewPassword123",
+      });
+
+    expect(resetResponse.status).toBe(200);
+
+    // Old password should fail
+    const oldLogin = await request(app)
+      .post("/api/auth/login")
+      .send({
+        email: user.email,
+        password: user.password,
+      });
+
+    expect(oldLogin.status).toBe(401);
+
+    // New password should work
+    const newLogin = await request(app)
+      .post("/api/auth/login")
+      .send({
+        email: user.email,
+        password: "NewPassword123",
+      });
+
+    expect(newLogin.status).toBe(200);
+    expect(newLogin.body).toHaveProperty(
+      "accessToken"
+    );
+    expect(newLogin.body.user.email).toBe(
+      user.email
+    );
+  });
+
+  // 15. Test for invalid token
+  it("should return 400 for an invalid or expired token", async () => {
+    const response = await request(app)
+      .post("/api/auth/reset-password")
+      .send({
+        token: "invalid-token",
+        password: "NewPassword123",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty(
+      "message",
+      "Invalid or expired password reset token"
+    );
+  });
+
+  // 16. Test for expired token
+  it("should return 400 for an expired token", async () => {
+
+    // Create a user first
+    const user = {
+      name: "Expired Token User",
+      email: "expired@example.com",
+      password: "Password123",
+    };
+
+    // Register the user
+    const registerResponse = await request(app)
+      .post("/api/auth/register")
+      .send(user);
+    expect(registerResponse.status).toBe(201);
+
+    const userId = registerResponse.body.user.id;
+
+    const resetToken = await createPasswordResetToken(userId, {
+        expiresAt: new Date(Date.now() - 1000),
+    });
+
+    const response = await request(app)
+      .post("/api/auth/reset-password")
+      .send({
+        token: resetToken,
+        password: "NewPassword123",
+      });
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty( "message", "Password reset token has expired");
+  });
+
+  // 17. Test for Used token
+  it("should return 400 for an used token", async () => {
+
+    // Create a user first
+    const user = {
+      name: "Used Token User",
+      email: "used@example.com",
+      password: "Password123",
+    };
+
+    // Register the user
+    const registerResponse = await request(app)
+      .post("/api/auth/register")
+      .send(user);
+    expect(registerResponse.status).toBe(201);
+
+    const userId = registerResponse.body.user.id;
+
+    const resetToken = await createPasswordResetToken(userId, {
+      usedAt: new Date(),
+    });
+
+    const response = await request(app)
+      .post("/api/auth/reset-password")
+      .send({
+        token: resetToken,
+        password: "NewPassword123",
+      });
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty( "message", "Password reset token has already been used");
+  });
+
+});
 
 // We are finished testing. Close the database connection - Runs once after the entire test suite and closes Prisma:
 afterAll(async () => {

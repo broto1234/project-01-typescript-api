@@ -33,3 +33,26 @@ export const loginSchema = z.object({
 });
 
 export type LoginUser = z.infer<typeof loginSchema>;
+
+
+export const forgotPasswordSchema = z.object({
+  email: z.email({
+    error: "Invalid email address",
+  }),
+});
+export type ForgotPasswordUser = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  token: z
+    .string()
+    .min(1, {
+      error: "Token is required",
+    }),
+
+  password: z
+    .string()
+    .min(8, {
+      error: "Password must be at least 8 characters long",
+    }),
+});
+export type ResetPasswordUser = z.infer<typeof resetPasswordSchema>;

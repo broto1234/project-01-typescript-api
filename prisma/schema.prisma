@@ -27,6 +27,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   refreshTokens RefreshToken[]         //Add the relation to RefreshToken
+  passwordResetTokens PasswordResetToken[] //Add the relation to PasswordResetToken
 }
 
 model RefreshToken {
@@ -40,4 +41,20 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+
+  tokenHash String   @unique
+
+  expiresAt DateTime
+
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  userId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -6,8 +6,12 @@ import asyncHandler from "../utils/asyncHandler";
 import authMiddleware from "../middleware/authMiddleware";
 import loginRateLimiter from "../middleware/loginRateLimiter";
 import validateRefreshToken from "../middleware/validateRefreshToken";
-import { registerSchema, loginSchema } from "../schemas/auth.schema";
+import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../schemas/auth.schema";
 import validate from "../middleware/validate";
+import { resetPassword } from "../controllers/auth.controller";
+// import { resetPasswordSchema } from "../valida";
+
+import { forgotPassword } from "../controllers/auth.controller";
 
 const authRouter = Router();
 
@@ -82,6 +86,9 @@ authRouter.post("/register", validate(registerSchema), asyncHandler(register));
 authRouter.post("/login", validate(loginSchema), asyncHandler(login));
 
 authRouter.post("/refresh", validateRefreshToken, asyncHandler(refresh)); // Placeholder for refresh token route
+authRouter.post("/forgot-password", validate(forgotPasswordSchema), asyncHandler(forgotPassword)); // Placeholder for forgot password route
+authRouter.post("/reset-password", validate(resetPasswordSchema), asyncHandler(resetPassword)); // Placeholder for reset password route
+
 authRouter.post("/logout", validateRefreshToken, asyncHandler(logout)); // Placeholder for logout route
 
 /**

@@ -28,4 +28,8 @@ export const env = {
   bcryptSaltRounds: Number(
     requiredEnv("BCRYPT_SALT_ROUNDS")
   ),
+
+  passwordResetExpiresHours: Number(
+    requiredEnv("PASSWORD_RESET_EXPIRES_HOURS")
+  ),
 };

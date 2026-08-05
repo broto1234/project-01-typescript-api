@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import * as authService from "../services/auth.service";
 import { CreateUser, LoginUser } from "../schemas/auth.schema";
+import { forgotPasswordService } from "../services/passwordReset.service";
+import { resetPassword as resetPasswordService } from "../services/resetPassword.service";
 
 // POST /register → Register user
 export const register = async (
@@ -69,6 +71,42 @@ export const refresh = async (
     success: true,
     accessToken: result.accessToken,
     refreshToken: result.refreshToken,
+  });
+};
+
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+
+  const { email } = req.body;
+
+  const resetLink = await forgotPasswordService(email);
+
+  res.status(200).json({
+    message: resetLink,
+  });
+};
+
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+
+  // Receives the request
+  const { token, password } = req.body;
+
+  // Calls the service
+  await resetPasswordService(
+    token,
+    password
+  );
+
+  // Sends a response back to the client
+  res.status(200).json({
+    message: "Password reset successfully",
   });
 };
 
