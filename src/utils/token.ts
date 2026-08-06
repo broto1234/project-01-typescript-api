@@ -1,10 +1,10 @@
 import crypto from "crypto";
 
-export const generatePasswordResetToken = (): string => {
+export const generateToken = (): string => {
   return crypto.randomBytes(32).toString("hex");
 };
 
-export const hashPasswordResetToken = (
+export const hashToken = (
   token: string
 ): string => {
   return crypto

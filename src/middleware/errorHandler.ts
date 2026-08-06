@@ -89,7 +89,15 @@ const errorHandler = (
   }
 
   //7. Handle unexpected errors
+  console.error("===== UNHANDLED ERROR =====");
+
+if (err instanceof Error) {
+  console.error("Name:", err.name);
+  console.error("Message:", err.message);
+  console.error(err.stack);
+} else {
   console.error(err);
+}
 
   res.status(500).json({
     success: false,

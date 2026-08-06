@@ -7,6 +7,7 @@ import { generateToken } from "../utils/jwt";
 import { generateRefreshToken, hashRefreshToken } from "../utils/refreshToken";
 import { env } from "../config/env";
 import { toPublicUser } from "../utils/publicUser";
+import { createEmailVerification } from "./emailVerification.service";
 
 // for registerUser, we will hash the password before saving it to the database.
 export const registerUser = async (
@@ -23,6 +24,13 @@ export const registerUser = async (
     },
   });
 
+  console.log("Before verification");
+  await createEmailVerification(
+    user.id,
+    user.email
+  );
+
+  console.log("Reached here");
   //...publicUser, which collects all the remaining properties except password.
   // const { password: _password, ...publicUser } = user;
   // return publicUser;

@@ -3,6 +3,7 @@ import * as authService from "../services/auth.service";
 import { CreateUser, LoginUser } from "../schemas/auth.schema";
 import { forgotPasswordService } from "../services/passwordReset.service";
 import { resetPassword as resetPasswordService } from "../services/resetPassword.service";
+import { verifyEmailService } from "../services/emailVerification.service";
 
 // POST /register → Register user
 export const register = async (
@@ -110,6 +111,22 @@ export const resetPassword = async (
   });
 };
 
+export const verifyEmail = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+
+  const { token } = req.query;
+
+  await verifyEmailService(
+    token as string
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Email verified successfully",
+  });
+};
 
 export const logout = async (
   req: Request,

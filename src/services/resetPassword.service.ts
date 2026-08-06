@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import prisma from "../lib/prisma";
 import AppError from "../utils/AppError";
 
-import { hashPasswordResetToken } from "../utils/passwordReset";
+import { hashToken } from "../utils/token";
 
 import { env } from "../config/env";
 
@@ -12,8 +12,7 @@ export const resetPassword = async (
   password: string
 ): Promise<void> => {
   // hash token - Hash the incoming token
-  const tokenHash =
-  hashPasswordResetToken(token);
+  const tokenHash = hashToken(token);
 
   // find token
   const storedToken =
