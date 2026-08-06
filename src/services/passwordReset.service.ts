@@ -1,8 +1,8 @@
 import prisma from "../lib/prisma";
 import {
-  generatePasswordResetToken,
-  hashPasswordResetToken,
-} from "../utils/passwordReset";
+  generateToken,
+  hashToken,
+} from "../utils/token";
 import { env } from "../config/env";
 import { sendPasswordResetEmail } from "./email.service";
 
@@ -21,10 +21,10 @@ export const forgotPasswordService = async (
   }
 
   // 3. Generate reset token
-  const resetToken = generatePasswordResetToken();
+  const resetToken = generateToken();
 
   // 4. Hash the token
-  const tokenHash = hashPasswordResetToken(resetToken);
+  const tokenHash = hashToken(resetToken);
 
   // 5. Create expiresAt (2 hours)
   const expiresAt = new Date(

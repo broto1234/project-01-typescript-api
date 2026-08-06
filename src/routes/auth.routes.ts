@@ -9,7 +9,7 @@ import validateRefreshToken from "../middleware/validateRefreshToken";
 import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../schemas/auth.schema";
 import validate from "../middleware/validate";
 import { resetPassword } from "../controllers/auth.controller";
-// import { resetPasswordSchema } from "../valida";
+import { verifyEmail } from "../controllers/auth.controller";
 
 import { forgotPassword } from "../controllers/auth.controller";
 
@@ -88,6 +88,7 @@ authRouter.post("/login", validate(loginSchema), asyncHandler(login));
 authRouter.post("/refresh", validateRefreshToken, asyncHandler(refresh)); // Placeholder for refresh token route
 authRouter.post("/forgot-password", validate(forgotPasswordSchema), asyncHandler(forgotPassword)); // Placeholder for forgot password route
 authRouter.post("/reset-password", validate(resetPasswordSchema), asyncHandler(resetPassword)); // Placeholder for reset password route
+authRouter.get("/verify-email", asyncHandler(verifyEmail)); // Placeholder for email verification route
 
 authRouter.post("/logout", validateRefreshToken, asyncHandler(logout)); // Placeholder for logout route
 

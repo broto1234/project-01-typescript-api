@@ -5,7 +5,7 @@ import app from "../src/app";
 import prisma from "../src/lib/prisma";
 
 import { generateRefreshToken, hashRefreshToken } from "../src/utils/refreshToken";
-import { generatePasswordResetToken, hashPasswordResetToken } from "../src/utils/passwordReset";
+import { generateToken, hashToken } from "../src/utils/token";
 import { sendPasswordResetEmail } from "../src/services/email.service";
 
 // Test users are removed/Clean up after every test - Runs after every test and cleans the test data:
@@ -39,10 +39,10 @@ const createPasswordResetToken = async (
     usedAt?: Date | null;
   }
 ) => {
-  const resetToken = generatePasswordResetToken();
+  const resetToken = generateToken();
 
   const tokenHash =
-    hashPasswordResetToken(resetToken);
+    hashToken(resetToken);
 
   await prisma.passwordResetToken.create({
     data: {
@@ -521,10 +521,6 @@ describe("POST /api/auth/reset-password", () => {
         token: token,
         password: "NewPassword123",
       });
-console.log(
-  "RESET RESPONSE:",
-  resetResponse.body
-);
     expect(resetResponse.status).toBe(200);
 
     // Old password should fail
@@ -616,6 +612,11 @@ console.log(
     const registerResponse = await request(app)
       .post("/api/auth/register")
       .send(user);
+      
+    if (registerResponse.status !== 201) {
+      throw new Error(JSON.stringify(registerResponse.body, null, 2));
+    }
+    
     expect(registerResponse.status).toBe(201);
 
     const userId = registerResponse.body.user.id;
@@ -623,6 +624,7 @@ console.log(
     const resetToken = await createPasswordResetToken(userId, {
       usedAt: new Date(),
     });
+
 
     const response = await request(app)
       .post("/api/auth/reset-password")

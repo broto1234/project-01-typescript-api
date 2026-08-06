@@ -62,3 +62,36 @@ export const sendPasswordResetEmail = async (
     html
   );
 };
+
+
+//knows what a verification email looks like
+export const sendVerificationEmail = async (
+  email: string,
+  verificationLink: string
+): Promise<void> => {
+  const subject = "Verify your email address";
+
+  const html = `
+    <h2>Welcome!</h2>
+
+    <p>Thanks for creating your account.</p>
+
+    <p>Please verify your email address by clicking the link below:</p>
+
+    <p>
+      <a href="${verificationLink}">
+        Verify Email
+      </a>
+    </p>
+
+    <p>This link expires in 2 hours.</p>
+
+    <p>If you didn't create this account, you can safely ignore this email.</p>
+  `;
+
+  await sendEmail(
+    email,
+    subject,
+    html
+  );
+};
