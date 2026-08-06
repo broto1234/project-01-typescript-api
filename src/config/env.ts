@@ -32,4 +32,14 @@ export const env = {
   passwordResetExpiresHours: Number(
     requiredEnv("PASSWORD_RESET_EXPIRES_HOURS")
   ),
+
+  mailHost: requiredEnv("MAIL_HOST"),
+
+  mailPort: Number(requiredEnv("MAIL_PORT")),
+
+  mailUser: requiredEnv("MAIL_USER"),
+
+  mailPassword: requiredEnv("MAIL_PASSWORD"),
+
+  mailFrom: requiredEnv("MAIL_FROM"),
 };
