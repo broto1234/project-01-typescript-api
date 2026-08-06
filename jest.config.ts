@@ -8,6 +8,11 @@ const config: Config = {
     "<rootDir>/tests/setup.ts",
   ],
 
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+  ],
+
   maxWorkers: 1,
 };
 

@@ -13,7 +13,7 @@ const requiredEnv = (
 };
 
 export const env = {
-  port: Number(requiredEnv("PORT")),
+  port: Number(process.env.PORT ?? 3000),
 
   databaseUrl: requiredEnv("DATABASE_URL"),
 
