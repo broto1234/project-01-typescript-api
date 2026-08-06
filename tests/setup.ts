@@ -13,6 +13,7 @@ jest.mock("../src/services/email.service", () => ({
 import prisma from "../src/lib/prisma";
 
 beforeEach(async () => {
+  jest.clearAllMocks();
   await prisma.refreshToken.deleteMany();
   await prisma.user.deleteMany();
 });
