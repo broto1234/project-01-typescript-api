@@ -6,6 +6,7 @@ import prisma from "../src/lib/prisma";
 
 import { generateRefreshToken, hashRefreshToken } from "../src/utils/refreshToken";
 import { generatePasswordResetToken, hashPasswordResetToken } from "../src/utils/passwordReset";
+import { sendPasswordResetEmail } from "../src/services/email.service";
 
 // Test users are removed/Clean up after every test - Runs after every test and cleans the test data:
 afterEach(async () => {
@@ -459,9 +460,9 @@ describe("POST /api/auth/forgot-password", () => {
         email: user.email,
     });
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("message");
-    expect(response.body.message).toContain(
-      "reset-password?token="
+    expect(response.body).toHaveProperty(
+      "message",
+      "If an account exists, a password reset link has been sent."
     );
   });
 
@@ -508,7 +509,8 @@ describe("POST /api/auth/reset-password", () => {
     expect(forgotResponse.status).toBe(200);
 
     // Extract the reset token from the response
-    const resetLink = forgotResponse.body.message;
+    const [, resetLink] =(sendPasswordResetEmail as jest.Mock)
+    .mock.calls[0];
     const token = new URL(resetLink).searchParams.get("token");
     expect(token).not.toBeNull();
 
@@ -519,7 +521,10 @@ describe("POST /api/auth/reset-password", () => {
         token: token,
         password: "NewPassword123",
       });
-
+console.log(
+  "RESET RESPONSE:",
+  resetResponse.body
+);
     expect(resetResponse.status).toBe(200);
 
     // Old password should fail

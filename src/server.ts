@@ -4,6 +4,7 @@ import { env } from './config/env';
 import prisma from './lib/prisma';
 import logger from './lib/logger';
 
+
 const PORT = env.port;
 // app.listen(PORT, () => {
 //   console.log(`Server is running on port ${PORT}`);

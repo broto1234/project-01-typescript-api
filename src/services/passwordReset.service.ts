@@ -4,6 +4,7 @@ import {
   hashPasswordResetToken,
 } from "../utils/passwordReset";
 import { env } from "../config/env";
+import { sendPasswordResetEmail } from "./email.service";
 
 export const forgotPasswordService = async (
   email: string
@@ -51,5 +52,14 @@ export const forgotPasswordService = async (
   });
 
   // 8. Send email with reset link (this is a placeholder, implement actual email sending)
-  return `http://localhost:5173/reset-password?token=${resetToken}`;
+  const resetLink = `${env.frontendUrl}/reset-password?token=${resetToken}`;
+
+  // 9. Send email
+  await sendPasswordResetEmail(
+    user.email,
+    resetLink
+  );
+
+  // 10. Return a generic response
+  return "If an account exists, a password reset link has been sent.";
 }
