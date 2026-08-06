@@ -7,7 +7,6 @@ import { Router } from 'express';
 import { getAllUsers, deleteUser, getUserById, updateUser, updateUserRole } from '../controllers/user.controller';
 // import validateCreateUser from '../middleware/validateCreateUser';
 import validateUserId from '../middleware/validateUserId';
-import validateUpdateUser from '../middleware/_validateUpdateUser';
 import validateRole from '../middleware/validateRole';
 
 import authMiddleware from '../middleware/authMiddleware';
