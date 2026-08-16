@@ -8,6 +8,7 @@ import {
 } from "../utils/token";
 
 import { sendVerificationEmail } from "./email.service";
+import AppError from "../utils/AppError";
 
 export const createEmailVerification = async (
   userId: number,
@@ -109,4 +110,31 @@ export const verifyEmailService = async (
     },
   });
 
+};
+
+
+export const resendVerificationService = async (
+  email: string
+): Promise<void> => {
+
+  // Find the user by email
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  // If user doesn't exist
+  if (!user) {
+    return;
+  }
+
+  // If user is already verified
+  if (user.emailVerifiedAt) {
+    throw new AppError(
+    "Email is already verified",
+    400
+  );
+  }
+
+  // Generate a new email verification token
+  await createEmailVerification(user.id, user.email);
 };

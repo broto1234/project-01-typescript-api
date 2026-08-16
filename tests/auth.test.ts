@@ -7,6 +7,9 @@ import prisma from "../src/lib/prisma";
 import { generateRefreshToken, hashRefreshToken } from "../src/utils/refreshToken";
 import { generateToken, hashToken } from "../src/utils/token";
 import { sendPasswordResetEmail } from "../src/services/email.service";
+import {
+  sendVerificationEmail,
+} from "../src/services/email.service";
 
 // Test users are removed/Clean up after every test - Runs after every test and cleans the test data:
 afterEach(async () => {
@@ -438,7 +441,7 @@ describe("POST /api/auth/refresh", () => {
 // --------- Forgot Password integration tests ---------
 describe("POST /api/auth/forgot-password", () => {
 
-  //succeed when the email exists
+  // 14. succeed when the email exists
   it("should generate a password reset link for an existing user", async () => {
 
     // Create a user first
@@ -466,7 +469,7 @@ describe("POST /api/auth/forgot-password", () => {
     );
   });
 
-  // security test
+  // 15. security test
   it("should return the same response for a non-existing email", async () => {
 
     // Request
@@ -485,7 +488,7 @@ describe("POST /api/auth/forgot-password", () => {
 // --------- Reset Password integration tests ---------
 describe("POST /api/auth/reset-password", () => {
 
-  // 14. Test for successful password reset with a valid token
+  // 16. Test for successful password reset with a valid token
   it("should reset the password successfully with a valid token", async () => {
     // Create a user first
     const user = {
@@ -550,7 +553,7 @@ describe("POST /api/auth/reset-password", () => {
     );
   });
 
-  // 15. Test for invalid token
+  // 17. Test for invalid token
   it("should return 400 for an invalid or expired token", async () => {
     const response = await request(app)
       .post("/api/auth/reset-password")
@@ -566,7 +569,7 @@ describe("POST /api/auth/reset-password", () => {
     );
   });
 
-  // 16. Test for expired token
+  // 18. Test for expired token
   it("should return 400 for an expired token", async () => {
 
     // Create a user first
@@ -598,7 +601,7 @@ describe("POST /api/auth/reset-password", () => {
     expect(response.body).toHaveProperty( "message", "Password reset token has expired");
   });
 
-  // 17. Test for Used token
+  // 19. Test for Used token
   it("should return 400 for an used token", async () => {
 
     // Create a user first
@@ -637,6 +640,169 @@ describe("POST /api/auth/reset-password", () => {
   });
 
 });
+
+// --------- Resend Verification Email integration tests ---------
+describe("POST /api/auth/resend-verification", () => {
+  
+  // 20. Test for resending verification email for an existing unverified user
+  it("should resend a verification email for an existing unverified user", async () => {
+    const user = {
+      name: "Test User",
+      email: "resend@example.com",
+      password: "Password123!",
+    };
+
+    // Register the user
+    const registerResponse = await request(app)
+      .post("/api/auth/register")
+      .send(user);
+
+    expect(registerResponse.status).toBe(201);
+
+    // Request another verification email
+    const response = await request(app)
+      .post("/api/auth/resend-verification")
+      .send({
+        email: user.email,
+      });
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toEqual({
+      success: true,
+      message:
+        "If an account exists, a verification email has been sent.",
+    });
+  });
+
+  // 21. Test for resending verification email for a non-existing user
+  it("should return the same response for a non-existing user", async () => {
+    const response = await request(app)
+      .post("/api/auth/resend-verification")
+      .send({
+        email: "unknown@example.com",
+      });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+      message:
+        "If an account exists, a verification email has been sent.",
+    });
+  });
+
+  // 22. Test for resending verification email for an already verified user
+  it("should return an error for an already verified user", async () => {
+    const user = {
+      name: "Verified User",
+      email: "verified@example.com",
+      password: "Password123!",
+    };
+
+    // Register the user
+    const registerResponse = await request(app)
+      .post("/api/auth/register")
+      .send(user);
+
+    expect(registerResponse.status).toBe(201);
+
+      // Get verification email mock
+    const mockSendVerificationEmail =
+  sendVerificationEmail as jest.Mock;
+
+    const verificationLink =
+      (sendVerificationEmail as jest.Mock)
+        .mock.calls[0][1];
+
+
+    const token =
+      new URL(verificationLink)
+        .searchParams
+        .get("token");
+
+
+    expect(token).not.toBeNull();
+
+
+    // Verify email
+    const verifyResponse = await request(app)
+      .get("/api/auth/verify-email")
+      .query({
+        token,
+      });
+
+    expect(verifyResponse.status).toBe(200);
+
+    // Try to resend
+    const response = await request(app)
+      .post("/api/auth/resend-verification")
+      .send({
+        email: user.email,
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body.message).toBe(
+      "Email is already verified"
+    );
+  });
+
+
+  // 23. Test for replacing the old verification token when resending
+  it("should replace the old verification token when resending", async () => {
+    const user = {
+      name: "Token Test User",
+      email: "token-test@example.com",
+      password: "Password123!",
+    };
+
+    // Register the user
+    const registerResponse = await request(app)
+      .post("/api/auth/register")
+      .send(user);
+
+    expect(registerResponse.status).toBe(201);
+
+    const userId = registerResponse.body.user.id;
+
+    // Get the original token
+    const originalToken =
+      await prisma.emailVerificationToken.findFirst({
+        where: {
+          userId,
+          usedAt: null,
+        },
+      });
+
+    expect(originalToken).not.toBeNull();
+
+    // Request a new verification email
+    const resendResponse = await request(app)
+      .post("/api/auth/resend-verification")
+      .send({
+        email: user.email,
+      });
+
+    expect(resendResponse.status).toBe(200);
+
+    // Get the new token
+    const newTokens =
+      await prisma.emailVerificationToken.findMany({
+        where: {
+          userId,
+          usedAt: null,
+        },
+      });
+
+    // There should only be one unused token
+    expect(newTokens).toHaveLength(1);
+
+    // The token hash should be different
+    expect(newTokens[0].tokenHash).not.toBe(
+      originalToken!.tokenHash
+    );
+  });
+});
+
 
 // We are finished testing. Close the database connection - Runs once after the entire test suite and closes Prisma:
 afterAll(async () => {

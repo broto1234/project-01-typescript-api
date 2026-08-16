@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { register, login, getMe, refresh, logout } from "../controllers/auth.controller";
+import { register, login, getMe, refresh, logout, resendVerificationController } from "../controllers/auth.controller";
 import asyncHandler from "../utils/asyncHandler";
 // import validateRegisterUser from "../middleware/_validateRegisterUser";
 // import validateLogin from "../middleware/_validateLogin";
 import authMiddleware from "../middleware/authMiddleware";
 import loginRateLimiter from "../middleware/loginRateLimiter";
 import validateRefreshToken from "../middleware/validateRefreshToken";
-import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../schemas/auth.schema";
+import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, resendVerificationSchema } from "../schemas/auth.schema";
 import validate from "../middleware/validate";
 import { resetPassword } from "../controllers/auth.controller";
 import { verifyEmail } from "../controllers/auth.controller";
@@ -89,6 +89,7 @@ authRouter.post("/refresh", validateRefreshToken, asyncHandler(refresh)); // Pla
 authRouter.post("/forgot-password", validate(forgotPasswordSchema), asyncHandler(forgotPassword)); // Placeholder for forgot password route
 authRouter.post("/reset-password", validate(resetPasswordSchema), asyncHandler(resetPassword)); // Placeholder for reset password route
 authRouter.get("/verify-email", asyncHandler(verifyEmail)); // Placeholder for email verification route
+authRouter.post("/resend-verification", validate(resendVerificationSchema), asyncHandler(resendVerificationController));
 
 authRouter.post("/logout", validateRefreshToken, asyncHandler(logout)); // Placeholder for logout route
 
