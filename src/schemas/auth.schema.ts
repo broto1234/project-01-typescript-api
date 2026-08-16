@@ -56,3 +56,9 @@ export const resetPasswordSchema = z.object({
     }),
 });
 export type ResetPasswordUser = z.infer<typeof resetPasswordSchema>;
+
+export const resendVerificationSchema = z.object({
+  email: z
+    .email("Please provide a valid email address"),
+});
+export type ResendVerificationUser = z.infer<typeof resendVerificationSchema>;
