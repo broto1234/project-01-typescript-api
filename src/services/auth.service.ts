@@ -62,6 +62,15 @@ export const loginUser = async (
     throw new AppError("Invalid email or password", 401);
   }
 
+
+  // Require email verification
+  if (!user.emailVerifiedAt) {
+    throw new AppError(
+      "Please verify your email before logging in",
+      403
+    );
+  }
+
   
   // Generate short-lived access token
   const accessToken = generateToken(
@@ -87,8 +96,6 @@ export const loginUser = async (
       expiresAt
     },
   });
-  
-  // const { password: _password, ...publicUser } = user;
 
   return { 
     user: toPublicUser(user), 

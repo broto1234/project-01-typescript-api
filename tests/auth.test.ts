@@ -89,6 +89,23 @@ describe("GET /api/auth/me", () => {
 
     expect(registerResponse.status).toBe(201);
 
+    const createdUser = await prisma.user.findUnique({
+  where: {
+    email: user.email,
+  },
+});
+
+expect(createdUser).not.toBeNull();
+
+await prisma.user.update({
+  where: {
+    id: createdUser!.id,
+  },
+  data: {
+    emailVerifiedAt: new Date(),
+  },
+});
+
     // Login
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -208,6 +225,24 @@ describe("POST /api/auth/login", () => {
 
     expect(registerResponse.status).toBe(201);
 
+
+    const createdUser = await prisma.user.findUnique({
+      where: {
+        email: user.email,
+      },
+    });
+
+    expect(createdUser).not.toBeNull();
+
+    await prisma.user.update({
+      where: {
+        id: createdUser!.id,
+      },
+      data: {
+        emailVerifiedAt: new Date(),
+      },
+    });
+
     // Login
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -281,6 +316,24 @@ describe("POST /api/auth/refresh", () => {
 
     expect(registerResponse.status).toBe(201);
 
+
+    const createdUser = await prisma.user.findUnique({
+      where: {
+        email: user.email,
+      },
+    });
+
+    expect(createdUser).not.toBeNull();
+
+    await prisma.user.update({
+      where: {
+        id: createdUser!.id,
+      },
+      data: {
+        emailVerifiedAt: new Date(),
+      },
+    });
+
     // Login
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -337,6 +390,25 @@ describe("POST /api/auth/refresh", () => {
       .send(user);
 
     expect(registerResponse.status).toBe(201);
+
+    // Test setup: verified user can log in
+const createdUser = await prisma.user.findUnique({
+  where: {
+    email: user.email,
+  },
+});
+
+expect(createdUser).not.toBeNull();
+
+await prisma.user.update({
+  where: {
+    id: createdUser!.id,
+  },
+  data: {
+    emailVerifiedAt: new Date(),
+  },
+});
+
 
     // Login
     const loginResponse = await request(app)
@@ -502,6 +574,25 @@ describe("POST /api/auth/reset-password", () => {
       .post("/api/auth/register")
       .send(user);
     expect(registerResponse.status).toBe(201);
+
+    // Test setup: this user is verified so login can succeed
+const createdUser = await prisma.user.findUnique({
+  where: {
+    email: user.email,
+  },
+});
+
+expect(createdUser).not.toBeNull();
+
+await prisma.user.update({
+  where: {
+    id: createdUser!.id,
+  },
+  data: {
+    emailVerifiedAt: new Date(),
+  },
+});
+
 
     // Call forgot password
     const forgotResponse = await request(app)
