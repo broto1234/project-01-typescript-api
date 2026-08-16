@@ -1,10 +1,10 @@
+//------- Authentication -------
 //It will:
-//
 //Read the Authorization header.
 //Check for Bearer <token>.
 //Verify the JWT.
-//Extract userId.
-//Attach the user ID to the request.
+//Extract userId & role.
+//Attach the user ID and role to the request.
 //Call next().
 // Then we'll protect a route, for example: userRouter.get( "/", authMiddleware, asyncHandler(getUsers));
 

@@ -43,6 +43,7 @@ const getAdminAccessToken = async (
     },
     data: {
       role: "ADMIN",
+      emailVerifiedAt: new Date(),
     },
   });
 
@@ -121,6 +122,7 @@ describe("GET /api/users", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -137,7 +139,7 @@ describe("GET /api/users", () => {
       loginResponse.body.accessToken;
   });
 
-  // 1. Test for unauthenticated access
+  // 1. Test for unauthenticated access - No JWT 401
   it("should return 401 without authentication", async () => {
     const response = await request(app)
       .get("/api/users");
@@ -145,7 +147,7 @@ describe("GET /api/users", () => {
     expect(response.status).toBe(401);
   });
 
-  // 2. Test for a regular user trying to access the endpoint
+  // 2. Test for a regular user trying to access the endpoint - Valid USER JWT - 403
   it("should return 403 for a regular user", async () => {
     const user = {
       name: "Regular User",
@@ -154,9 +156,28 @@ describe("GET /api/users", () => {
     };
 
     // Register
-    await request(app)
+    const registerResponse = await request(app)
       .post("/api/auth/register")
       .send(user);
+
+    expect(registerResponse.status).toBe(201);
+
+    const createdUser = await prisma.user.findUnique({
+      where: {
+        email: user.email,
+      },
+    });
+
+    expect(createdUser).not.toBeNull();
+
+    await prisma.user.update({
+      where: {
+        id: createdUser!.id,
+      },
+      data: {
+        emailVerifiedAt: new Date(),
+      },
+    });
 
     // Login
     const loginResponse = await request(app)
@@ -182,7 +203,7 @@ describe("GET /api/users", () => {
     expect(response.status).toBe(403);
   });
 
-  // 3. Test for an admin user accessing the endpoint - authorized access
+  // 3. Test for an admin user accessing the endpoint - authorized access - Valid ADMIN JWT - 200
   it("should return 200 for an admin user", async () => {
     const user = {
       name: "Admin User",
@@ -214,6 +235,7 @@ describe("GET /api/users", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -274,6 +296,7 @@ describe("GET /api/users", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -286,6 +309,24 @@ describe("GET /api/users", () => {
       });
 
     expect(loginResponse.status).toBe(200);
+
+    const createdUser = await prisma.user.findUnique({
+  where: {
+    email: admin.email,
+  },
+});
+
+expect(createdUser).not.toBeNull();
+
+await prisma.user.update({
+  where: {
+    id: createdUser!.id,
+  },
+  data: {
+    role: "ADMIN",
+    emailVerifiedAt: new Date(),
+  },
+});
 
     const accessToken =
       loginResponse.body.accessToken;
@@ -377,6 +418,7 @@ describe("GET /api/users", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -471,6 +513,7 @@ describe("GET /api/users", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -573,6 +616,7 @@ describe("GET /api/users", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -679,6 +723,7 @@ describe("GET /api/users", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -864,12 +909,22 @@ describe("GET /api/users/:id", () => {
 
     expect(registerResponse.status).toBe(201);
 
-    const createdUser =
-      await prisma.user.findUnique({
-        where: {
-          email: user.email,
-        },
-      });
+    const createdUser = await prisma.user.findUnique({
+  where: {
+    email: user.email,
+  },
+});
+
+expect(createdUser).not.toBeNull();
+
+  await prisma.user.update({
+    where: {
+      id: createdUser!.id,
+    },
+    data: {
+      emailVerifiedAt: new Date(),
+    },
+  });
 
     expect(createdUser).not.toBeNull();
 
@@ -881,6 +936,7 @@ describe("GET /api/users/:id", () => {
       });
 
     expect(loginResponse.status).toBe(200);
+
 
     const accessToken =
       loginResponse.body.accessToken;
@@ -954,6 +1010,17 @@ describe("GET /api/users/:id", () => {
 
     expect(createdUserA).not.toBeNull();
     expect(createdUserB).not.toBeNull();
+
+    // User A must be verified because User A needs to log in
+    await prisma.user.update({
+      where: {
+        id: createdUserA!.id,
+      },
+      data: {
+        emailVerifiedAt: new Date(),
+      },
+    });
+
 
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -1054,6 +1121,26 @@ describe("PATCH /api/users/:id", () => {
       .post("/api/auth/register")
       .send(user);
 
+    
+// Test setup: verify the user so login is allowed
+const createdUser =
+  await prisma.user.findUnique({
+    where: {
+      email: user.email,
+    },
+  });
+
+expect(createdUser).not.toBeNull();
+
+await prisma.user.update({
+  where: {
+    id: createdUser!.id,
+  },
+  data: {
+    emailVerifiedAt: new Date(),
+  },
+});
+
     // Step 2 — Login
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -1066,17 +1153,6 @@ describe("PATCH /api/users/:id", () => {
 
     const accessToken =
       loginResponse.body.accessToken;
-
-
-    // Step 3 — Find the user ID
-    const createdUser =
-      await prisma.user.findUnique({
-        where: {
-          email: user.email,
-        },
-      });
-
-    expect(createdUser).not.toBeNull();
 
 
     // Step 4 — Update the user's profile
@@ -1156,6 +1232,7 @@ describe("PATCH /api/users/:id/role", () => {
       },
       data: {
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       },
     });
 
@@ -1241,6 +1318,23 @@ describe("PATCH /api/users/:id/role", () => {
       .post("/api/auth/register")
       .send(userA);
 
+    const createdUserA = await prisma.user.findUnique({
+  where: {
+    email: userA.email,
+  },
+});
+
+expect(createdUserA).not.toBeNull();
+
+await prisma.user.update({
+  where: {
+    id: createdUserA!.id,
+  },
+  data: {
+    emailVerifiedAt: new Date(),
+  },
+});
+
     // login as userA
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -1280,6 +1374,7 @@ describe("PATCH /api/users/:id/role", () => {
       )
       .send({
         role: "ADMIN",
+        emailVerifiedAt: new Date(),
       });
 
     // Step 4 — Assertions
@@ -1448,6 +1543,18 @@ describe("DELETE /api/users/:id", () => {
 
     expect(selfDeleteUser).not.toBeNull();
 
+
+// Test setup: verify the user so login is allowed
+await prisma.user.update({
+  where: {
+    id: selfDeleteUser!.id,
+  },
+  data: {
+    emailVerifiedAt: new Date(),
+  },
+});
+
+
     // Step 3. Login as that user
     const loginResponse = await request(app)
       .post("/api/auth/login")
@@ -1497,6 +1604,26 @@ describe("DELETE /api/users/:id", () => {
     await request(app)
       .post("/api/auth/register")
       .send(userA);
+
+    // Verify User A so login is allowed
+const createdUserA =
+  await prisma.user.findUnique({
+    where: {
+      email: userA.email,
+    },
+  });
+
+expect(createdUserA).not.toBeNull();
+
+await prisma.user.update({
+  where: {
+    id: createdUserA!.id,
+  },
+  data: {
+    emailVerifiedAt: new Date(),
+  },
+});
+
 
     // Step 2. Login User A
     const loginResponse = await request(app)
