@@ -1,3 +1,11 @@
+const nodeEnv = process.env.NODE_ENV ?? "development";
+
+if (!["development", "test", "production"].includes(nodeEnv)) {
+  throw new Error(
+    `Invalid NODE_ENV: ${nodeEnv}`
+  );
+}
+
 const requiredEnv = (name: string): string => {
   const value = process.env[name];
 
@@ -23,6 +31,7 @@ const requiredNumberEnv = (name: string): number => {
 };
 
 export const env = {
+  nodeEnv,
   port: (() => {
   const value = Number(process.env.PORT ?? 3000);
 
