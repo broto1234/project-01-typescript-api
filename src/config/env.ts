@@ -1,6 +1,4 @@
-const requiredEnv = (
-  name: string
-): string => {
+const requiredEnv = (name: string): string => {
   const value = process.env[name];
 
   if (!value) {
@@ -12,8 +10,30 @@ const requiredEnv = (
   return value;
 };
 
+const requiredNumberEnv = (name: string): number => {
+  const value = Number(requiredEnv(name));
+
+  if (!Number.isFinite(value)) {
+    throw new Error(
+      `${name} environment variable must be a valid number`
+    );
+  }
+
+  return value;
+};
+
 export const env = {
-  port: Number(process.env.PORT ?? 3000),
+  port: (() => {
+  const value = Number(process.env.PORT ?? 3000);
+
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(
+      "PORT environment variable must be a positive integer"
+    );
+  }
+
+  return value;
+})(),
 
   databaseUrl: requiredEnv("DATABASE_URL"),
 
@@ -21,25 +41,25 @@ export const env = {
 
   frontendUrl: requiredEnv("FRONTEND_URL"),
 
-  refreshTokenExpiresDays: Number(
-    requiredEnv("REFRESH_TOKEN_EXPIRES_DAYS")
-  ),
+  refreshTokenExpiresDays:
+    requiredNumberEnv("REFRESH_TOKEN_EXPIRES_DAYS"),
 
-  bcryptSaltRounds: Number(
-    requiredEnv("BCRYPT_SALT_ROUNDS")
-  ),
+  bcryptSaltRounds:
+    requiredNumberEnv("BCRYPT_SALT_ROUNDS"),
 
-  passwordResetExpiresHours: Number(
-    requiredEnv("PASSWORD_RESET_EXPIRES_HOURS")
-  ),
+  passwordResetExpiresHours:
+    requiredNumberEnv("PASSWORD_RESET_EXPIRES_HOURS"),
 
   mailHost: requiredEnv("MAIL_HOST"),
 
-  mailPort: Number(requiredEnv("MAIL_PORT")),
+  mailPort:
+    requiredNumberEnv("MAIL_PORT"),
 
   mailUser: requiredEnv("MAIL_USER"),
 
-  mailPassword: requiredEnv("MAIL_PASSWORD"),
+  mailPassword:
+    requiredEnv("MAIL_PASSWORD"),
 
-  mailFrom: requiredEnv("MAIL_FROM"),
+  mailFrom:
+    requiredEnv("MAIL_FROM"),
 };
