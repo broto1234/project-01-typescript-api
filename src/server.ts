@@ -11,7 +11,7 @@ const PORT = env.port;
 // });
 
 //Store the server instance
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
   logger.info(`Server is running on port ${PORT}`);
 });
 
